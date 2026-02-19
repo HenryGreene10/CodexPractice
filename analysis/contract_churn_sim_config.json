@@ -1,0 +1,89 @@
+{
+  "anchors": {
+    "ltm_total_revenue": 12400000,
+    "ltm_contract_revenue": 3200000,
+    "ltm_ebitda": 1000000,
+    "contract_client_count": 8,
+    "top2_contract_share": 0.45,
+    "top2_individual_share": 0.225,
+    "contract_term_months": "6-12",
+    "contract_commitment_note": "Short-term agreements with limited volume commitments",
+    "contract_gross_margin_case_note": "mid-20s%"
+  },
+  "model_defaults": {
+    "runs": 20000,
+    "seed": 42,
+    "thresholds": [1000000, 800000],
+    "customer_allocation": {
+      "top2_share_each": 0.225,
+      "rest_customer_count": 6,
+      "rest_share_total": 0.55
+    }
+  },
+  "scenarios": {
+    "base": {
+      "description": "Moderate renewal with conservative 25% backfill.",
+      "renewal_probs": {
+        "top2_mean": 0.8,
+        "rest_mean": 0.85
+      },
+      "downsizing_factor": {
+        "distribution": "triangular",
+        "low": 0.85,
+        "mode": 1.0,
+        "high": 1.05
+      },
+      "backfill_fraction": 0.25,
+      "gm_contract": 0.25,
+      "drop_through": 0.7
+    },
+    "downside": {
+      "description": "Lower renewal, weaker price/volume hold, no backfill.",
+      "renewal_probs": {
+        "top2_mean": 0.7,
+        "rest_mean": 0.78
+      },
+      "downsizing_factor": {
+        "distribution": "triangular",
+        "low": 0.8,
+        "mode": 0.95,
+        "high": 1.02
+      },
+      "backfill_fraction": 0.0,
+      "gm_contract": 0.22,
+      "drop_through": 0.9
+    },
+    "upside": {
+      "description": "Stronger renewals, stable volumes, and meaningful backfill.",
+      "renewal_probs": {
+        "top2_mean": 0.88,
+        "rest_mean": 0.92
+      },
+      "downsizing_factor": {
+        "distribution": "triangular",
+        "low": 0.92,
+        "mode": 1.01,
+        "high": 1.08
+      },
+      "backfill_fraction": 0.5,
+      "gm_contract": 0.28,
+      "drop_through": 0.5
+    },
+    "de_risked": {
+      "description": "Proxy for longer contracts: higher renewal and tighter volume outcomes.",
+      "renewal_probs": {
+        "top2_mean": 0.9,
+        "rest_mean": 0.93
+      },
+      "downsizing_factor": {
+        "distribution": "triangular",
+        "low": 0.95,
+        "mode": 1.0,
+        "high": 1.03
+      },
+      "backfill_fraction": 0.25,
+      "gm_contract": 0.25,
+      "drop_through": 0.7
+    }
+  }
+}
