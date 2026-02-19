@@ -471,7 +471,7 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--config",
-        default="analysis/contract_churn_sim_config.json",
+        default=None,
         help="Path to JSON config",
     )
     return parser.parse_args(argv)
@@ -486,7 +486,9 @@ def normalize_scenario_name(name: str) -> str:
 
 def main(argv: List[str]) -> int:
     args = parse_args(argv)
-    config = load_config(args.config)
+    default_config_path = str(Path(__file__).with_name("contract_churn_sim_config.json"))
+    config_path = args.config if args.config is not None else default_config_path
+    config = load_config(config_path)
 
     scenario_name = normalize_scenario_name(args.scenario)
 
