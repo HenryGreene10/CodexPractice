@@ -110,6 +110,7 @@ def optimize_resolved_config(cfg: Dict[str, Any], scenario_name: str) -> Dict[st
     min_contract = int(demand.get("min_contract_bbl", 0))
     max_branded = int(min(demand.get("max_branded_bbl", capacity_bbl), capacity_bbl))
     max_contract = int(min(demand.get("max_contract_bbl", capacity_bbl), capacity_bbl))
+    demand_cap_tolerance_bbl = float(assumptions.get("demand_cap_tolerance_bbl", 0.5))
 
     canning_cfg = assumptions["canning"]
     canning_capacity = float(canning_cfg["canning_hours_capacity"])
@@ -192,6 +193,25 @@ def optimize_resolved_config(cfg: Dict[str, Any], scenario_name: str) -> Dict[st
     )
     blended_margin = (best["gross_profit_usd"] / blended_revenue) if blended_revenue > 0 else 0.0
 
+    branded_demand_cap_binds = (
+        max_branded < capacity_bbl
+        and abs(best["branded_bbl"] - max_branded) <= demand_cap_tolerance_bbl
+    )
+    contract_demand_cap_binds = (
+        max_contract < capacity_bbl
+        and abs(best["contract_bbl"] - max_contract) <= demand_cap_tolerance_bbl
+    )
+
+    demand_cap_binding_messages: List[str] = []
+    if branded_demand_cap_binds:
+        demand_cap_binding_messages.append(
+            f"Branded max cap reached ({max_branded:,} BBL). Results reflect near-term commercial constraints (distribution / demand), not just operations."
+        )
+    if contract_demand_cap_binds:
+        demand_cap_binding_messages.append(
+            f"Contract max cap reached ({max_contract:,} BBL). Results reflect contract demand availability assumptions."
+        )
+
     best.update(
         {
             "capacity_bbl": capacity_bbl,
@@ -209,6 +229,12 @@ def optimize_resolved_config(cfg: Dict[str, Any], scenario_name: str) -> Dict[st
             "revenue_per_bbl": rev_per_bbl,
             "gross_margin": {"branded": branded_gm, "contract": contract_gm},
             "blended_margin_pct": 100.0 * blended_margin,
+            "max_branded_bbl": max_branded,
+            "max_contract_bbl": max_contract,
+            "branded_demand_cap_binds": branded_demand_cap_binds,
+            "contract_demand_cap_binds": contract_demand_cap_binds,
+            "any_demand_cap_binds": branded_demand_cap_binds or contract_demand_cap_binds,
+            "demand_cap_binding_messages": demand_cap_binding_messages,
         }
     )
 
@@ -340,7 +366,37 @@ def run_sensitivity(config: Dict[str, Any], scenario_name: str) -> str:
         )
 
     headers = ["Parameter", "Value", "Optimal Mix (B/C)", "GP"]
-    return format_table(headers, rows)
+    one_way_table = format_table(headers, rows)
+
+    branded_cap_values = sensitivity.get("max_branded_bbl", [35000, 45000, 55000])
+    branded_cap_rows: List[List[str]] = []
+    for value in branded_cap_values:
+        value_int = int(value)
+        result = optimize_with_override(
+            config,
+            scenario_name,
+            {"assumptions": {"demand_limits_bbl": {"max_branded_bbl": value_int}}},
+            f"max_branded_bbl={value_int}",
+        )
+        branded_cap_rows.append(
+            [
+                f"{value_int:,}",
+                f"{result['branded_share_pct']:.1f}%/{result['contract_share_pct']:.1f}%",
+                f"{result['total_bbl']:,}",
+                f"{result['canning_util_pct']:.1f}%",
+                f"{result['gross_profit_usd'] / 1_000_000:.2f}M",
+            ]
+        )
+
+    branded_cap_headers = [
+        "max_branded_bbl",
+        "Optimal Mix (B/C)",
+        "Total BBL",
+        "Canning Util",
+        "GP",
+    ]
+    branded_cap_table = format_table(branded_cap_headers, branded_cap_rows)
+    return f"{one_way_table}\n\nBranded Demand Cap Sensitivity:\n{branded_cap_table}"
 
 
 def build_vp_insights(config: Dict[str, Any], selected: Dict[str, Any]) -> List[str]:
@@ -382,13 +438,18 @@ def build_vp_insights(config: Dict[str, Any], selected: Dict[str, Any]) -> List[
         f"but branded is more canning/changeover intensive, the practical plan is to protect core branded SKUs and batch long-tail branded runs."
     )
 
-    return [
+    insights = [
         mix_statement,
         sku_statement,
         de_sku_statement,
         contract_push_statement,
         strategy_statement,
     ]
+    if selected.get("any_demand_cap_binds", False):
+        insights.append(
+            "Note: Optimal mix is constrained by near-term demand caps (branded/contract). Improving canning capacity alone may not change mix unless demand limits relax."
+        )
+    return insights
 
 
 def print_primary_result(result: Dict[str, Any]) -> None:
@@ -400,17 +461,36 @@ def print_primary_result(result: Dict[str, Any]) -> None:
     print(
         f"  Mix: {result['branded_share_pct']:.1f}% branded / {result['contract_share_pct']:.1f}% contract"
     )
+    if result.get("any_demand_cap_binds", False):
+        print("Demand cap(s) binding:")
+        for message in result.get("demand_cap_binding_messages", []):
+            print(f"  - {message}")
+    else:
+        print("Demand cap(s) binding: none")
     print("Canning constraint:")
     print(
         f"  Used: {result['canning_hours_used']:.1f} / {result['canning_hours_capacity']:.1f} hours "
         f"({result['canning_util_pct']:.1f}%)"
     )
     print(f"  Binding: {'yes' if result['canning_binds'] else 'no'}")
+    if result["canning_util_pct"] >= 99.0:
+        print(
+            "  Constraint status: Hard binding — marginal capacity increases could change mix materially."
+        )
+    elif result["canning_util_pct"] >= 90.0:
+        print(
+            "  Constraint status: Tight but flexible — operational improvements could unlock mix shift."
+        )
+    else:
+        print("  Constraint status: Slack — economics, not capacity, drives optimal mix.")
     print("Economics:")
-    print(f"  Gross profit contribution: {format_currency(result['gross_profit_usd'])}")
-    print(f"  EBITDA proxy: {format_currency(result['ebitda_proxy_usd'])}")
+    print(f"  Contribution (relative GP proxy): {format_currency(result['gross_profit_usd'])}")
     print(
-        f"  Delta vs baseline (assumed {result['baseline_total_bbl']:,} BBL current state): "
+        "  EBITDA index (relative, not accounting EBITDA): "
+        f"{format_currency(result['ebitda_proxy_usd'])}"
+    )
+    print(
+        "  Incremental volume vs current 32,000 BBL state (theoretical headroom): "
         f"{result['delta_total_bbl_vs_baseline']:+,} BBL, "
         f"{format_currency(result['delta_gp_vs_baseline_usd'])} GP"
     )

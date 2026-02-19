@@ -45,6 +45,20 @@ class MixOptimizerTests(unittest.TestCase):
         self.assertEqual(result["branded_bbl"], 60_000)
         self.assertEqual(result["contract_bbl"], 0)
 
+    def test_low_branded_cap_flags_demand_cap_binding(self):
+        cfg = _load_default_config()
+        cfg_capped = copy.deepcopy(cfg)
+        cfg_capped["assumptions"]["canning"]["canning_hours_capacity"] = 10_000_000
+        cfg_capped["assumptions"]["demand_limits_bbl"]["max_branded_bbl"] = 10_000
+        cfg_capped["assumptions"]["demand_limits_bbl"]["max_contract_bbl"] = 60_000
+
+        result = mix_optimizer.optimize_for_scenario(cfg_capped, "base")
+
+        self.assertEqual(result["branded_bbl"], 10_000)
+        self.assertTrue(result["branded_demand_cap_binds"])
+        self.assertTrue(result["any_demand_cap_binds"])
+        self.assertIn("Branded max cap reached", " ".join(result["demand_cap_binding_messages"]))
+
 
 if __name__ == "__main__":
     unittest.main()

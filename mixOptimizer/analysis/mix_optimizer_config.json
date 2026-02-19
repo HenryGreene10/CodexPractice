@@ -32,19 +32,19 @@
     },
     "drop_through_to_ebitda": 0.55,
     "canning": {
-      "canning_hours_capacity": 11000,
+      "canning_hours_capacity": 12000,
       "canning_hours_per_bbl": {
         "branded": 0.2,
         "contract": 0.09
       },
-      "changeover_hours_per_run": 7.0,
+      "changeover_hours_per_run": 8.0,
       "avg_run_size_bbl": 170.0
     },
     "demand_limits_bbl": {
       "min_branded_bbl": 0,
-      "max_branded_bbl": 60000,
+      "max_branded_bbl": 40000,
       "min_contract_bbl": 0,
-      "max_contract_bbl": 20000
+      "max_contract_bbl": 17000
     },
     "baseline_mix": {
       "total_bbl": 32000,
@@ -53,13 +53,13 @@
   },
   "sensitivity": {
     "changeover_hours_per_run": [
-      5.0,
-      7.0,
-      9.0
+      6.0,
+      8.0,
+      11.0
     ],
     "canning_hours_capacity": [
-      9500,
-      11000,
+      10000,
+      12000,
       13000
     ],
     "contract_gm": [
@@ -71,6 +71,11 @@
       0.4,
       0.45,
       0.5
+    ],
+    "max_branded_bbl": [
+      35000,
+      45000,
+      55000
     ]
   },
   "scenarios": {
@@ -79,7 +84,7 @@
       "assumptions": {
         "canning": {
           "changeover_hours_per_run": 9.0,
-          "avg_run_size_bbl": 130.0
+          "avg_run_size_bbl": 115.0
         }
       }
     },
@@ -95,6 +100,9 @@
         "canning": {
           "changeover_hours_per_run": 4.0,
           "avg_run_size_bbl": 300.0
+        },
+        "demand_limits_bbl": {
+          "max_branded_bbl": 43000
         }
       }
     }

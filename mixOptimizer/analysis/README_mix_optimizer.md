@@ -40,6 +40,12 @@ The packet does not provide numeric canning-hour capacity or changeover times. T
 - revenue per BBL mode and values
 - EBITDA drop-through
 
+#### Near-term demand caps
+- The case packet does not provide explicit segment demand ceilings.
+- `max_branded_bbl` and `max_contract_bbl` are included to prevent unrealistic infinite-demand outcomes.
+- These represent near-term commercial constraints (distribution reach, branded demand depth, and contract availability).
+- Stress-testing these caps is important; the CLI now includes one-way sensitivity on branded demand cap.
+
 ## Model structure
 Decision variables:
 - `branded_bbl`
@@ -92,12 +98,12 @@ python3 analysis/mix_optimizer.py --config analysis/mix_optimizer_config.json
 ```text
 Scenario: base
 Optimal mix:
-  Branded BBL: 38,200
-  Contract BBL: 19,800
-  Total BBL: 58,000 / 60,000
+  Branded BBL: 40,000
+  Contract BBL: 17,000
+  Total BBL: 57,000 / 60,000
 Canning constraint:
-  Used: 10994.9 / 11000.0 hours (100.0%)
-  Binding: yes
+  Used: 11412.4 / 12000.0 hours (95.1%)
+  Binding: no
 ```
 
 ## Interpreting outputs
@@ -106,6 +112,8 @@ Canning constraint:
 - **Scenario comparison table**: quick side-by-side economics for base/sku_bloat/contract_push/de_sku.
 - **Sensitivity table** (`--sensitivity`): one-way shifts in mix and GP for key uncertain inputs.
 - **VP-ready insights**: concise strategy bullets tied to the case framing (SKU complexity, canning bottleneck, contract fill vs margin dilution).
+- **Demand-cap interpretation**: if demand caps bind, the optimizer is signaling demand is the bottleneck; contract is the monetization path until branded demand grows.
+- **Financial interpretation note**: contribution and EBITDA outputs are comparative mix economics for directional decision support, not audited accounting financials.
 
 ## Tests
 Run:
