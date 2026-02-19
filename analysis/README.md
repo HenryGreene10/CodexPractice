@@ -48,6 +48,8 @@ Configured in `analysis/contract_churn_sim_config.json`:
 Focus on:
 - **Probability of EBITDA below gates** (`$1.0M`, `$0.8M`)
 - **Tail risk** (`P10`, `P5`) vs median
+- **Expected EBITDA shortfall vs baseline** (average dollar gap vs `$1.0M`)
+- **Probability of meaningful EBITDA hits** (`>$100k`, `>$200k`)
 - **Concentration risk** through top-2 churn rates
 - **Mitigation value** from higher top-2 renewal and backfill in VP bullet section
 - **Sensitivity table** to show which assumptions move P10 most
@@ -75,11 +77,15 @@ Summary risk metrics:
 - P5 EBITDA: $803,580
 - P(EBITDA < $1,000,000): 99.6%
 - P(EBITDA < $800,000): 4.5%
+- Expected EBITDA shortfall vs baseline: $83,624
+- P(EBITDA hit > $100k): 37.5%
+- P(EBITDA hit > $200k): 4.5%
 - Expected contract revenue retained: 85.1%
 
 VP-ready implications:
 - In base, there is a 99.6% probability EBITDA falls below $1,000,000, with concentration risk centered on top-2 renewals.
 - Tail downside remains material: P10 EBITDA is $824,834 and P5 is $803,580.
+- Expected EBITDA shortfall vs baseline is $83,624, and P(hit > $200k) is 4.5%.
 - Increasing top-2 renewal mean by +10 pts lifts P10 EBITDA by ~$33,843.
 - Adding +25 pts backfill (capped at 50%) improves P10 EBITDA by ~$58,389.
 - Expected contract revenue retained is 85.1% of the $3,200,000 contract base.
@@ -94,11 +100,15 @@ Summary risk metrics:
 - P5 EBITDA: $629,669
 - P(EBITDA < $1,000,000): 100.0%
 - P(EBITDA < $800,000): 47.4%
+- Expected EBITDA shortfall vs baseline: $197,196
+- P(EBITDA hit > $100k): 80.4%
+- P(EBITDA hit > $200k): 47.4%
 - Expected contract revenue retained: 68.9%
 
 VP-ready implications:
 - In downside, there is a 100.0% probability EBITDA falls below $1,000,000, with concentration risk centered on top-2 renewals.
 - Tail downside remains material: P10 EBITDA is $663,458 and P5 is $629,669.
+- Expected EBITDA shortfall vs baseline is $197,196, and P(hit > $200k) is 47.4%.
 - Increasing top-2 renewal mean by +10 pts lifts P10 EBITDA by ~$44,688.
 - Adding +25 pts backfill (capped at 50%) improves P10 EBITDA by ~$84,136.
 - Expected contract revenue retained is 68.9% of the $3,200,000 contract base.
@@ -113,11 +123,15 @@ Summary risk metrics:
 - P5 EBITDA: $927,932
 - P(EBITDA < $1,000,000): 71.7%
 - P(EBITDA < $800,000): 0.0%
+- Expected EBITDA shortfall vs baseline: $22,470
+- P(EBITDA hit > $100k): 1.6%
+- P(EBITDA hit > $200k): 0.0%
 - Expected contract revenue retained: 95.3%
 
 VP-ready implications:
 - In upside, there is a 71.7% probability EBITDA falls below $1,000,000, with concentration risk centered on top-2 renewals.
 - Tail downside remains material: P10 EBITDA is $935,329 and P5 is $927,932.
+- Expected EBITDA shortfall vs baseline is $22,470, and P(hit > $200k) is 0.0%.
 - Increasing top-2 renewal mean by +10 pts lifts P10 EBITDA by ~$26,044.
 - Adding +25 pts backfill (capped at 50%) improves P10 EBITDA by ~$0.
 - Expected contract revenue retained is 95.3% of the $3,200,000 contract base.
@@ -132,11 +146,15 @@ Summary risk metrics:
 - P5 EBITDA: $865,555
 - P(EBITDA < $1,000,000): 91.7%
 - P(EBITDA < $800,000): 0.6%
+- Expected EBITDA shortfall vs baseline: $37,685
+- P(EBITDA hit > $100k): 8.2%
+- P(EBITDA hit > $200k): 0.6%
 - Expected contract revenue retained: 93.3%
 
 VP-ready implications:
 - In de_risked, there is a 91.7% probability EBITDA falls below $1,000,000, with concentration risk centered on top-2 renewals.
 - Tail downside remains material: P10 EBITDA is $901,507 and P5 is $865,555.
+- Expected EBITDA shortfall vs baseline is $37,685, and P(hit > $200k) is 0.6%.
 - Increasing top-2 renewal mean by +10 pts lifts P10 EBITDA by ~$54,402.
 - Adding +25 pts backfill (capped at 50%) improves P10 EBITDA by ~$32,831.
 - Expected contract revenue retained is 93.3% of the $3,200,000 contract base.

@@ -41,6 +41,9 @@ def test_fixed_seed_stable_mean_and_median() -> None:
     metrics = result["metrics"]
     assert abs(metrics["mean_ebitda"] - 917_118.6448140444) < 1e-6
     assert abs(metrics["median_ebitda"] - 932_532.6812350436) < 1e-6
+    assert abs(metrics["expected_shortfall_vs_baseline"] - 82_888.2102011028) < 1e-6
+    assert abs(metrics["prob_hit_gt_100k"] - 0.364) < 1e-12
+    assert abs(metrics["prob_hit_gt_200k"] - 0.043) < 1e-12
 
 
 def test_invalid_runs_rejected() -> None:

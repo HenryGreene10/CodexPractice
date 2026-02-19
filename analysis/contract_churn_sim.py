@@ -184,6 +184,9 @@ def run_simulation(
 
     prob_below_high = sum(1 for x in ebitda_results if x < threshold_high) / runs
     prob_below_low = sum(1 for x in ebitda_results if x < threshold_low) / runs
+    expected_shortfall_vs_baseline = statistics.fmean(max(base_ebitda - x, 0.0) for x in ebitda_results)
+    prob_hit_gt_100k = sum(1 for x in ebitda_results if x < (base_ebitda - 100_000)) / runs
+    prob_hit_gt_200k = sum(1 for x in ebitda_results if x < (base_ebitda - 200_000)) / runs
 
     mean_contract = statistics.fmean(contract_results)
     retained_pct = mean_contract / base_contract_rev
@@ -207,6 +210,9 @@ def run_simulation(
             "p5_ebitda": p5_ebitda,
             "prob_below_high": prob_below_high,
             "prob_below_low": prob_below_low,
+            "expected_shortfall_vs_baseline": expected_shortfall_vs_baseline,
+            "prob_hit_gt_100k": prob_hit_gt_100k,
+            "prob_hit_gt_200k": prob_hit_gt_200k,
             "mean_contract_revenue": mean_contract,
             "retained_pct": retained_pct,
             "top2_churn_rate": top2_churn_rate,
@@ -271,6 +277,9 @@ def print_summary(result: Dict) -> None:
     print(f"- P5 EBITDA: {format_currency(m['p5_ebitda'])}")
     print(f"- P(EBITDA < {format_currency(t1)}): {m['prob_below_high'] * 100:.1f}%")
     print(f"- P(EBITDA < {format_currency(t2)}): {m['prob_below_low'] * 100:.1f}%")
+    print(f"- Expected EBITDA shortfall vs baseline: {format_currency(m['expected_shortfall_vs_baseline'])}")
+    print(f"- P(EBITDA hit > $100k): {m['prob_hit_gt_100k'] * 100:.1f}%")
+    print(f"- P(EBITDA hit > $200k): {m['prob_hit_gt_200k'] * 100:.1f}%")
     print(f"- Expected contract revenue retained: {m['retained_pct'] * 100:.1f}%")
     print()
 
@@ -378,6 +387,11 @@ def build_vp_bullets(
         (
             f"Tail downside remains material: P10 EBITDA is {format_currency(base_metrics['p10_ebitda'])} "
             f"and P5 is {format_currency(base_metrics['p5_ebitda'])}."
+        ),
+        (
+            f"Expected EBITDA shortfall vs baseline is "
+            f"{format_currency(base_metrics['expected_shortfall_vs_baseline'])}, and "
+            f"P(hit > $200k) is {base_metrics['prob_hit_gt_200k'] * 100:.1f}%."
         ),
         (
             f"Increasing top-2 renewal mean by +10 pts lifts P10 EBITDA by "
